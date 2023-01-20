@@ -1,0 +1,45 @@
+
+# import pandas,numpy libs as pd,np 
+import pandas as pd
+import numpy as np
+import os
+
+path = 'C:\\Users\\Sai_iluru\\python\\projects\\chen\\KT4\\'
+files = []
+# r=root, d=directories, f = files
+for r, d, f in os.walk(path):
+    for file in f:
+        if '.csv' in file:
+            file = file[:-4]
+            files.append(file)
+
+sublist = files[1:10]
+print(sublist)
+for user in sublist:
+#creating data frames from CSV files
+    df1 = pd.read_csv(r"C:\Users\Sai_iluru\python\projects\chen\contents\questions.csv",usecols = ['question_id','correct_answer'])
+    df2 = pd.read_csv(fr"C:\Users\Sai_iluru\python\projects\chen\KT4\{user}.csv",usecols = ['item_id','user_answer'])
+
+#df2['user_answer'].replace('', np.nan, inplace=True)  to replace empty cells with NaN 
+# not needed now as dataframes automatically replacing empty cells with NaN
+
+#Droping rows with empty cells to find the questions answered by student
+    df2.dropna(subset=['user_answer'], inplace=True)
+
+# renaming the question_id with item_id to Merge both the data frames
+    df1.rename(columns = {'question_id':'item_id'}, inplace = True)
+    df1=pd.merge(df1, df2, how="right", on="item_id")
+
+#Checking correct answers
+    df1.loc[df1['correct_answer'] == df1['user_answer'], 'points'] = 'correct' 
+
+#counting correct answers
+    correct_answers=np.sum(df1['points'] == 'correct')
+    print(f"number of questions answered correctly by {user} is " + str(correct_answers))
+#counting total rows
+    total=np.sum(df1['item_id'] != 'NaN')
+    print(f"total questions answered by {user} is "+ str(total))
+#Calculating Accuracy
+    accuracy = correct_answers*100/total
+    print(f"Accuracy of {user} is " + str(accuracy) + "\n")
+
